@@ -103,14 +103,102 @@
     </div>
 
     <script>
+        // 현재 화면단에 로드된 영화 리스트를 임시 보관하는 배열
+        let fetchedMovies = [];
+
+        // 💡 버튼 선택 시 백엔드 API로부터 데이터를 셔플해서 가져오는 함수
         function showMovies(emotionName) {
             const resultSection = document.getElementById('result-section');
-            resultSection.style.display = 'flex';
             const title = document.getElementById('selected-emotion-title');
+            const listContainer = document.getElementById('movie-list-container');
+            
+            // 레이아웃 스타일을 flex로 변경하여 결과창 노출
+            resultSection.style.display = 'flex';
             title.innerText = `🎬 '${emotionName}' 관련 추천 영화`;
+            
+            // 통신 중 대기 메시지 노출
+            listContainer.innerHTML = `<div style="color:#8c8c8c; text-align:center; padding:30px;">영화를 불러오는 중입니다...</div>`;
+
+            // FastAPI 주소로 비동기 GET 요청전송
+            fetch(`/api/movies?emotion=${encodeURIComponent(emotionName)}`)
+                .then(response => response.json())
+                .then(res => {
+                    if (res.status === "success" && res.data.length > 0) {
+                        fetchedMovies = res.data; // 글로벌 메모리에 저장
+                        listContainer.innerHTML = ""; // 대기문구 클리어
+                        
+                        // 랜덤하게 정렬되어 내려온 영화 배열 가공
+                        res.data.forEach(movie => {
+                            const card = document.createElement('div');
+                            card.style.cssText = "background: #1f1f1f; padding: 20px; border-radius: 4px; border: 1px solid #333; cursor: pointer; transition: all 0.2s ease;";
+                            card.onclick = () => selectMovieDetail(movie.id);
+                            card.innerHTML = `
+                                <h4 style="margin: 0 0 6px 0; color: #fff; font-size: 16px; text-align: left;">${movie.title}</h4>
+                                <div style="display:flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 12px; color: #E50914; font-weight: bold;">${movie.genre}</span>
+                                    <span style="font-size: 12px; color: #8c8c8c;">⭐️ ${movie.rating}</span>
+                                </div>
+                            `;
+                            
+                            // 인터랙티브 효과 부여
+                            card.onmouseenter = () => { card.style.borderColor = '#E50914'; card.style.transform = 'translateY(-2px)'; };
+                            card.onmouseleave = () => { card.style.borderColor = '#333'; card.style.transform = 'translateY(0)'; };
+                            
+                            listContainer.appendChild(card);
+                        });
+
+                        // 셔플된 리스트 중 첫 번째 배치된 영화 정보를 오른쪽에 자동 세팅
+                        selectMovieDetail(res.data[0].id);
+                    } else {
+                        listContainer.innerHTML = `<div style="color:#8c8c8c; text-align:center; padding:30px;">아직 데이터가 비어있는 감정 카테고리입니다. 🛠️</div>`;
+                        resetDetailContainer();
+                    }
+                })
+                .catch(err => {
+                    console.error("API 연동 에러:", err);
+                    listContainer.innerHTML = `<div style="color:#e74c3c; text-align:center; padding:30px;">백엔드 서버와 연결할 수 없습니다.</div>`;
+                });
+
             setTimeout(() => {
                 resultSection.scrollIntoView({ behavior: 'smooth' });
             }, 50);
+        }
+
+        // 💡 특정 영화를 눌렀을 때 우측 레이아웃 데이터를 매핑해주는 함수
+        function selectMovieDetail(movieId) {
+            const movie = fetchedMovies.find(m => m.id === movieId);
+            if (!movie) return;
+
+            // 기본 텍스트 필드 바인딩
+            document.getElementById('detail-title').innerText = movie.title;
+            document.getElementById('detail-genre').innerText = movie.genre;
+            document.getElementById('detail-year').innerText = movie.year;
+            document.getElementById('detail-time').innerText = movie.time;
+            document.getElementById('detail-rating').innerText = `⭐️ ${movie.rating}`;
+            document.getElementById('detail-pos').innerText = movie.pos;
+            document.getElementById('detail-neg').innerText = movie.neg;
+
+            // OTT 플랫폼 뱃지 컴포넌트 생성 및 초기화
+            const ottArea = document.getElementById('detail-ott');
+            ottArea.innerHTML = "";
+            movie.ott.forEach(platform => {
+                const badge = document.createElement('span');
+                badge.style.cssText = "background: #E50914; color: #fff; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 3px; letter-spacing: 0.5px;";
+                badge.innerText = platform;
+                ottArea.appendChild(badge);
+            });
+        }
+
+        // 데이터가 없을 때 상세 데이터 우측 창 초기화 헬퍼 함수
+        function resetDetailContainer() {
+            document.getElementById('detail-title').innerText = "영화 제목";
+            document.getElementById('detail-genre').innerText = "-";
+            document.getElementById('detail-year').innerText = "-";
+            document.getElementById('detail-time').innerText = "-";
+            document.getElementById('detail-rating').innerText = "-";
+            document.getElementById('detail-pos').innerText = "선택된 영화가 없습니다.";
+            document.getElementById('detail-neg').innerText = "선택된 영화가 없습니다.";
+            document.getElementById('detail-ott').innerHTML = `<span style="background: #222; color: #666; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 3px; border: 1px solid #333;">OTT 정보 없음</span>`;
         }
     </script>
 </body>
