@@ -1,0 +1,362 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>감정 기반 영화 추천 서비스</title>
+</head>
+<body style="text-align: center; font-family: sans-serif; background-color: #000000; color: #ffffff; padding: 80px 10px; margin: 0; box-sizing: border-box; overflow-x: hidden;">
+
+    <div style="position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.12; pointer-events: none;">
+        <svg width="100%" height="100%" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+            <g stroke="#ffffff" fill="none">
+                <g transform="rotate(15, 500, 500)">
+                    <line x1="-200" y1="200" x2="1200" y2="200" stroke-width="4" />
+                    <line x1="-200" y1="420" x2="1200" y2="420" stroke-width="4" />
+                    <line x1="-200" y1="215" x2="1200" y2="215" stroke-width="5" stroke-dasharray="15, 30" />
+                    <line x1="-200" y1="405" x2="1200" y2="405" stroke-width="5" stroke-dasharray="15, 30" />
+                    <path d="M -100 200 L -100 420 M 150 200 L 150 420 M 400 200 L 400 420 M 650 200 L 650 420 M 900 200 L 900 420 M 1150 200 L 1150 420" stroke-width="2" />
+                </g>
+                <g transform="rotate(-15, 500, 500)">
+                    <line x1="-200" y1="820" x2="1200" y2="820" stroke-width="4" />
+                    <line x1="-200" y1="1040" x2="1200" y2="1040" stroke-width="4" />
+                    <line x1="-200" y1="835" x2="1200" y2="835" stroke-width="5" stroke-dasharray="15, 30" />
+                    <line x1="-200" y1="1025" x2="1200" y2="1025" stroke-width="5" stroke-dasharray="15, 30" />
+                    <path d="M -50 820 L -50 1040 M 200 820 L 200 1040 M 450 820 L 450 1040 M 700 820 L 700 1040 M 950 820 L 950 1040 M 1200 820 L 1200 1040" stroke-width="2" />
+                </g>
+            </g>
+        </svg>
+    </div>
+
+    <div style="position: relative; z-index: 2; max-width: 1000px; margin: 0 auto;">
+        <h1 style="color: #E50914; font-size: 36px; font-weight: 900; margin-bottom: 10px; letter-spacing: -1px;">지금 어떤 감정을 느끼고 싶으신가요?</h1>
+        <p style="color: #8c8c8c; font-size: 16px; margin-bottom: 3px;">감정을 선택하면 영화를 추천해 드립니다.</p>
+        <p style="color: #666; font-size: 13px; margin-top: 0;">약 150편의 국내 영화 데이터 중 현재 감정에 어울리는 영화를 추천합니다.</p>
+        <br>
+
+        <h3 style="color: #fff; text-align: left; max-width: 900px; margin: 0 auto 15px auto; font-size: 18px;">🧠 감정 선택하기</h3>
+        
+        <div style="background: #141414; max-width: 900px; margin: 0 auto; padding: 25px; border-radius: 4px; box-shadow: 0px 4px 20px rgba(0,0,0,0.8); display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;">
+            <button onclick="showMovies('울고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">😭 울고 싶어</button>
+            <button onclick="showMovies('웃고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">😁 웃고 싶어</button>
+            <button onclick="showMovies('감동받고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">✨ 감동받고 싶어</button>
+            <button onclick="showMovies('설레고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">💖 설레고 싶어</button>
+            <button onclick="showMovies('긴장감을 느끼고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">⚡ 긴장감을 느끼고 싶어</button>
+            <button onclick="showMovies('몰입하고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">🎬 몰입하고 싶어</button>
+            <button onclick="showMovies('반전을 보고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">🌀 반전을 보고 싶어</button>
+            <button onclick="showMovies('생각하게 만드는 영화를 보고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">💡 생각하게 만드는 영화를 보고 싶어</button>
+            <button onclick="showMovies('성장 이야기가 보고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">🌱 성장 이야기가 보고 싶어</button>
+            <button onclick="showMovies('미장센이 좋은 영화를 보고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">🎨 미장센이 좋은 영화를 보고 싶어</button>
+            <button onclick="showMovies('음악이 좋은 영화를 보고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">🎵 음악이 좋은 영화를 보고 싶어</button>
+            <button onclick="showMovies('가벼운 마음으로 시간을 보내고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">🎈 가벼운 마음으로 시간을 보내고 싶어</button>
+            <button onclick="showMovies('친구랑 보고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">🙌 친구랑 보고 싶어</button>
+            <button onclick="showMovies('가족이랑 보고 싶어')" style="padding: 12px 24px; font-size: 15px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s;">🏡 가족이랑 보고 싶어</button>
+        </div>
+        
+    <div style="margin-top: 18px; color: #aaa;">
+        <label for="sortSelect" style="margin-right: 8px;">정렬 기준</label>
+        <select id="sortSelect" style="padding: 8px 12px; background:#222; color:#fff; border:1px solid #333; border-radius:4px;">
+            <option value="rating">별점 높은 순</option>
+            <option value="year">최신 개봉 순</option>
+        </select>
+    </div>
+
+        <br><br><br>
+
+        <div id="result-section" style="display: none; max-width: 900px; margin: 0 auto; gap: 30px; text-align: left; box-sizing: border-box;">
+            
+            <div style="flex: 1.2;">
+                <h3 id="selected-emotion-title" style="color: #fff; margin-top: 0; font-size: 18px;">🎬 추천 영화 목록</h3>
+                <div id="movie-list-container" style="display: flex; flex-direction: column; gap: 15px; max-height: 480px; overflow-y: auto; padding-right: 8px;">
+                    <div style="background: #141414; padding: 30px; border-radius: 4px; border: 1px solid #222; text-align: center; color: #8c8c8c;">
+                        <p style="margin: 0; font-size: 15px;">선택한 감정에 맞는 영화 목록이 여기에 표시됩니다.</p>
+                        <span style="font-size: 13px; color: #555;">(API 연동 후 실시간 로드 예정)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="flex: 1; background: #141414; padding: 25px; border-radius: 4px; border: 1px solid #222; box-shadow: 0px 4px 20px rgba(0,0,0,0.8); align-self: flex-start;">
+                <h3 style="color: #fff; margin-top: 0; border-bottom: 2px solid #E50914; padding-bottom: 10px; font-size: 18px;">🔍 영화 상세 정보</h3>
+                <h2 id="detail-title" style="margin: 0 0 15px 0; color: #fff; font-size: 24px;">영화 제목</h2>
+                
+                <div style="margin-bottom: 20px;">
+                    <span style="font-size: 13px; color: #8c8c8c; display: block; margin-bottom: 8px;">📺 시청 가능한 OTT 및 가격 정보</span>
+                    <div id="detail-ott" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                </div>
+                
+                <div style="font-size: 14px; color: #ccc; line-height: 1.8; margin-bottom: 20px; background: #1f1f1f; padding: 15px; border-radius: 4px;">
+                    <p style="margin: 4px 0;"><strong style="color: #8c8c8c;">🎦 장르 :</strong> <span id="detail-genre">-</span></p>
+                    <p style="margin: 4px 0;"><strong style="color: #8c8c8c;">📅 개봉 연도 :</strong> <span id="detail-year">-</span></p>
+                    <p style="margin: 4px 0;"><strong style="color: #8c8c8c;">⏱️ 상영 시간 :</strong> <span id="detail-time">-</span></p>
+                    <p style="margin: 4px 0;"><strong style="color: #8c8c8c;">⭐️ 평점 :</strong> <span id="detail-rating">-</span></p>
+                </div>
+                
+                <div style="text-align: left;">
+                    <h4 style="margin: 0 0 8px 0; color: #fff; font-size: 15px;">💬 베스트 평론</h4>
+                    <div style="background: rgba(46, 204, 113, 0.05); border-left: 4px solid #2ecc71; padding: 10px 12px; margin-bottom: 10px; border-radius: 0 4px 4px 0;">
+                        <span style="color: #2ecc71; font-weight: bold; font-size: 12px;">👍 긍정 한줄평</span>
+                        <p id="detail-pos" style="margin: 5px 0 0 0; font-size: 13px; color: #666; font-style: italic;">선택된 영화가 없습니다.</p>
+                    </div>
+                    <div style="background: rgba(231, 76, 60, 0.05); border-left: 4px solid #e74c3c; padding: 10px 12px; border-radius: 0 4px 4px 0;">
+                        <span style="color: #e74c3c; font-weight: bold; font-size: 12px;">👎 부정 한줄평</span>
+                        <p id="detail-neg" style="margin: 5px 0 0 0; font-size: 13px; color: #666; font-style: italic;">선택된 영화가 없습니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let currentEmotion = "";
+    const API_BASE = "http://localhost:5000";
+
+    async function showMovies(emotionName) {
+        currentEmotion = emotionName;
+        const resultSection = document.getElementById('result-section');
+        const title = document.getElementById('selected-emotion-title');
+        const movieListBox = document.getElementById('movie-list-container');
+
+        resultSection.style.display = 'flex';
+        title.innerText = `🎬 '${emotionName}' 관련 추천 영화`;
+
+        movieListBox.innerHTML = `
+            <div style="background:#141414; padding:30px; border-radius:4px; border:1px solid #222; text-align:center; color:#8c8c8c;">
+                추천 영화를 불러오는 중입니다...
+            </div>
+        `;
+
+        try {
+            const sortSelect = document.getElementById("sortSelect");
+            const orderBy = sortSelect ? sortSelect.value : "rating";
+
+            const response = await fetch(
+                 `${API_BASE}/api/movies?emotion=${encodeURIComponent(emotionName)}&order_by=${orderBy}`
+            );
+
+         const result = await response.json();
+
+            if (result.status !== "success" || !result.data || result.data.length === 0) {
+                movieListBox.innerHTML = `
+                    <div style="background:#141414; padding:30px; border-radius:4px; border:1px solid #222; text-align:center; color:#8c8c8c;">
+                        <p>추천 영화가 없습니다.</p>
+                    </div>
+                `;
+                clearMovieDetail();
+                return;
+            }
+
+            movieListBox.innerHTML = "";
+
+            result.data.forEach(function(movie) {
+                const movieCard = document.createElement("div");
+
+                movieCard.style.background = "#141414";
+                movieCard.style.padding = "20px";
+                movieCard.style.borderRadius = "4px";
+                movieCard.style.border = "1px solid #222";
+                movieCard.style.cursor = "pointer";
+                movieCard.style.marginBottom = "15px";
+
+                movieCard.innerHTML = `
+                    <h3 style="color:white; margin:0 0 10px 0; font-size:18px;">
+                        ${getMovieValue(movie, "title", "영화제목")}
+                    </h3>
+                    <p style="color:#aaa; margin:4px 0; font-size:13px;">장르: ${getMovieValue(movie, "genre", "장르")}</p>
+                    <p style="color:#aaa; margin:4px 0; font-size:13px;">개봉 연도: ${getMovieValue(movie, "year", "개봉 연도")}</p>
+                    <p style="color:#E50914; margin:4px 0; font-size:13px; font-weight:bold;">⭐ 평점: ${getMovieValue(movie, "rating", "평점")}</p>
+                `;
+
+                movieCard.addEventListener("click", function() {
+                    showMovieDetail(movie);
+                });
+
+                movieListBox.appendChild(movieCard);
+            });
+
+            showMovieDetail(result.data[0]);
+
+        } catch (error) {
+            console.error(error);
+            movieListBox.innerHTML = `
+                <div style="background:#141414; padding:30px; border-radius:4px; border:1px solid #222; text-align:center; color:#8c8c8c;">
+                    <p>API 연결에 실패했습니다.</p>
+                </div>
+            `;
+            clearMovieDetail();
+        }
+
+        setTimeout(function() {
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }, 50);
+    }
+
+    function showMovieDetail(movie) {
+        document.getElementById('detail-title').innerText =
+            getMovieValue(movie, "title", "영화제목", "영화 제목");
+
+        document.getElementById('detail-genre').innerText =
+            getMovieValue(movie, "genre", "장르");
+
+        document.getElementById('detail-year').innerText =
+            getMovieValue(movie, "year", "개봉 연도");
+
+        const runtime =
+            movie.time || movie.runtime || movie["상영 시간(분)"] || "-";
+
+        document.getElementById('detail-time').innerText =
+            String(runtime).includes("분") ? runtime : `${runtime}분`;
+
+        document.getElementById('detail-rating').innerText =
+            getMovieValue(movie, "rating", "평점");
+
+        document.getElementById('detail-pos').innerText =
+            movie.pos || movie.positive_review || movie["긍정 평론 (핵심 요약)"] || "-";
+
+        document.getElementById('detail-neg').innerText =
+            movie.neg || movie.negative_review || movie["부정 평론 (핵심 요약)"] || "-";
+
+        renderOttInfo(movie);
+    }
+
+    function clearMovieDetail() {
+        document.getElementById('detail-title').innerText = "영화 제목";
+        document.getElementById('detail-genre').innerText = "-";
+        document.getElementById('detail-year').innerText = "-";
+        document.getElementById('detail-time').innerText = "-";
+        document.getElementById('detail-rating').innerText = "-";
+        document.getElementById('detail-pos').innerText = "선택된 영화가 없습니다.";
+        document.getElementById('detail-neg').innerText = "선택된 영화가 없습니다.";
+        document.getElementById('detail-ott').innerHTML = "";
+    }
+
+    function getMovieValue(movie, englishKey, koreanKey, defaultValue = "-") {
+        const value = movie[englishKey] ?? movie[koreanKey];
+
+        if (value === null || value === undefined || value === "") {
+            return defaultValue;
+        }
+
+        return value;
+    }
+
+    function renderOttInfo(movie) {
+        const ottBox = document.getElementById('detail-ott');
+        ottBox.innerHTML = "";
+
+        let ottList = movie.ott || movie.ott_info || movie.ottOffers || movie.ott_offers || movie.platforms || [];
+
+        if (!Array.isArray(ottList)) {
+            ottList = [];
+        }
+
+        if (ottList.length === 0 && (movie.platform || movie.type || movie.rent_price || movie.buy_price)) {
+            ottList = [movie];
+        }
+
+        if (ottList.length === 0) {
+            ottBox.innerHTML = `
+                <p style="color:#666; font-size:13px; margin:0;">
+                    OTT 정보가 없습니다.
+                </p>
+            `;
+            return;
+        }
+
+        const table = document.createElement("div");
+        table.style.display = "grid";
+        table.style.gridTemplateColumns = "1.1fr 0.8fr 1fr";
+        table.style.gap = "1px";
+        table.style.background = "#333";
+        table.style.border = "1px solid #333";
+        table.style.borderRadius = "4px";
+        table.style.overflow = "hidden";
+        table.style.fontSize = "13px";
+
+        table.innerHTML = `
+            <div style="background:#111; color:#8c8c8c; padding:8px; font-weight:bold; text-align:center;">플랫폼</div>
+            <div style="background:#111; color:#8c8c8c; padding:8px; font-weight:bold; text-align:center;">이용 방식</div>
+            <div style="background:#111; color:#8c8c8c; padding:8px; font-weight:bold; text-align:center;">가격</div>
+        `;
+
+        let rowCount = 0;
+
+        ottList.forEach(function(ott) {
+            const platform = ott.platform || ott.name || ott.플랫폼 || "-";
+            const type = normalizeType(ott.type || ott.이용방식 || ott["이용 방식"] || "");
+            const rentPrice = ott.rent_price ?? ott.rentPrice ?? ott["대여 가격"] ?? ott["대여가격"];
+            const buyPrice = ott.buy_price ?? ott.buyPrice ?? ott["구매 가격"] ?? ott["구매가격"] ?? ott["소장 가격"] ?? ott["소장가격"];
+            const price = ott.price ?? ott.가격;
+
+            if (type === "구독") {
+                addOttRow(table, platform, "구독", price ? formatPrice(price) : "구독 포함");
+                rowCount++;
+                return;
+            }
+
+            if (rentPrice !== null && rentPrice !== undefined && rentPrice !== "") {
+                addOttRow(table, platform, "대여", formatPrice(rentPrice));
+                rowCount++;
+            }
+
+            if (buyPrice !== null && buyPrice !== undefined && buyPrice !== "") {
+                addOttRow(table, platform, "소장", formatPrice(buyPrice));
+                rowCount++;
+            }
+
+            if (!rentPrice && !buyPrice && type) {
+                addOttRow(table, platform, type, price ? formatPrice(price) : "-");
+                rowCount++;
+            }
+        });
+
+        if (rowCount === 0) {
+            ottBox.innerHTML = `
+                <p style="color:#666; font-size:13px; margin:0;">
+                    OTT 정보가 없습니다.
+                </p>
+            `;
+            return;
+        }
+
+        ottBox.appendChild(table);
+    }
+
+    function addOttRow(table, platform, type, price) {
+        table.innerHTML += `
+            <div style="background:#1f1f1f; color:#fff; padding:8px; text-align:center;">${platform}</div>
+            <div style="background:#1f1f1f; color:#ccc; padding:8px; text-align:center;">${type}</div>
+            <div style="background:#1f1f1f; color:#E50914; padding:8px; font-weight:bold; text-align:center;">${price}</div>
+        `;
+    }
+
+    function normalizeType(type) {
+        if (!type) return "";
+        const text = String(type).trim();
+        return text === "구매" ? "소장" : text;
+    }
+
+    function formatPrice(price) {
+        if (price === null || price === undefined || price === "") return "-";
+
+        if (typeof price === "number") {
+            return price.toLocaleString() + "원";
+        }
+
+        const text = String(price).trim();
+        return text.includes("원") || text === "구독 포함" ? text : text + "원";
+    }
+    
+    document.addEventListener("DOMContentLoaded", function () {
+        const sortSelect = document.getElementById("sortSelect");
+
+        if (sortSelect) {
+            sortSelect.addEventListener("change", function () {
+                if (currentEmotion) {
+                    showMovies(currentEmotion);
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>
