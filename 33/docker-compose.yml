@@ -1,0 +1,53 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: movie_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_1234
+      MYSQL_DATABASE: movie_recommend_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - movie_network
+
+  backend:
+    build: ./backend
+    container_name: movie_backend
+    restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - ./Movies.csv:/app/Movies.csv
+      - ./OTT_Offers.csv:/app/OTT_Offers.csv
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root_password_1234
+      - DB_NAME=movie_recommend_db
+    depends_on:
+      - db
+    networks:
+      - movie_network
+
+  frontend:
+    build: ./frontend
+    container_name: movie_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - movie_network
+
+volumes:
+  db_data:
+
+networks:
+  movie_network:
+    driver: bridge
